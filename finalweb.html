@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Pick Em Admin</title>
+
+<style>
+body{
+    font-family:Arial;
+    background:#111;
+    color:white;
+    text-align:center;
+}
+
+.box{
+    max-width:500px;
+    margin:auto;
+    background:#1c1c1c;
+    padding:20px;
+    border-radius:12px;
+}
+
+input, button{
+    width:90%;
+    padding:10px;
+    margin:8px;
+    border:none;
+    border-radius:8px;
+}
+
+button{
+    background:#4da3ff;
+    color:white;
+    cursor:pointer;
+}
+
+.player{
+    background:#222;
+    margin:10px auto;
+    padding:10px;
+    width:90%;
+    border-radius:10px;
+    display:flex;
+    justify-content:space-between;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>🎯 Pick Em Admin</h1>
+
+<div class="box">
+
+    <input id="name" placeholder="Name">
+    <input id="image" placeholder="Image URL">
+
+    <button onclick="addOrUpdate()">Add / Update</button>
+    <button onclick="resetVotes()">Reset Votes</button>
+    <button onclick="clearAll()">Clear All</button>
+
+</div>
+
+<h2>Players</h2>
+<div id="list"></div>
+
+<script>
+
+let people = JSON.parse(localStorage.getItem("people") || "[]");
+let editIndex = -1;
+
+function save(){
+    localStorage.setItem("people", JSON.stringify(people));
+    render();
+}
+
+function addOrUpdate(){
+
+    let name = document.getElementById("name").value;
+    let image = document.getElementById("image").value;
+
+    if(!name || !image){
+        alert("Fill both fields");
+        return;
+    }
+
+    if(editIndex === -1){
+
+        people.push({
+            name,
+            image,
+            wins:0,
+            losses:0,
+            rating:1000
+        });
+
+    } else {
+
+        people[editIndex].name = name;
+        people[editIndex].image = image;
+
+        editIndex = -1;
+    }
+
+    save();
+
+    document.getElementById("name").value = "";
+    document.getElementById("image").value = "";
+}
+
+function edit(i){
+    document.getElementById("name").value = people[i].name;
+    document.getElementById("image").value = people[i].image;
+    editIndex = i;
+}
+
+function del(i){
+    people.splice(i,1);
+    save();
+}
+
+function resetVotes(){
+
+    people.forEach(p=>{
+        p.wins = 0;
+        p.losses = 0;
+        p.rating = 1000;
+    });
+
+    save();
+}
+
+function clearAll(){
+    if(confirm("Delete EVERYTHING?")){
+        people = [];
+        save();
+    }
+}
+
+function render(){
+
+    let list = document.getElementById("list");
+    list.innerHTML = "";
+
+    people.forEach((p,i)=>{
+
+        list.innerHTML += `
+        <div class="player">
+            <span>${p.name}</span>
+            <div>
+                <button onclick="edit(${i})">Edit</button>
+                <button onclick="del(${i})">X</button>
+            </div>
+        </div>`;
+    });
+}
+
+render();
+
+</script>
+
+</body>
+</html>

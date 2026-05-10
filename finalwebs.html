@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Pick Em</title>
+
+<style>
+body{
+    font-family:Arial;
+    background:#0b0b0f;
+    color:white;
+    text-align:center;
+}
+
+.container{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.card{
+    width:280px;
+    background:#1c1c1c;
+    border-radius:12px;
+    overflow:hidden;
+    cursor:pointer;
+}
+
+.card img{
+    width:100%;
+    height:350px;
+    object-fit:cover;
+}
+
+.board{
+    margin-top:30px;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>🎯 Pick Em</h1>
+
+<div class="container">
+    <div class="card" id="left">
+        <img id="imgL">
+        <h3 id="nameL"></h3>
+    </div>
+
+    <div class="card" id="right">
+        <img id="imgR">
+        <h3 id="nameR"></h3>
+    </div>
+</div>
+
+<div id="board"></div>
+
+<script>
+
+let people = JSON.parse(localStorage.getItem("people") || "[]");
+
+let left, right;
+
+function save(){
+    localStorage.setItem("people", JSON.stringify(people));
+}
+
+function battle(){
+
+    if(people.length < 2){
+        document.getElementById("board").innerHTML =
+        "<h2>Add players in admin.html first</h2>";
+        return;
+    }
+
+    left = Math.floor(Math.random()*people.length);
+    right = Math.floor(Math.random()*people.length);
+
+    while(right === left){
+        right = Math.floor(Math.random()*people.length);
+    }
+
+    document.getElementById("imgL").src = people[left].image;
+    document.getElementById("nameL").innerText = people[left].name;
+
+    document.getElementById("imgR").src = people[right].image;
+    document.getElementById("nameR").innerText = people[right].name;
+}
+
+function vote(w,l){
+
+    people[w].wins++;
+    people[l].losses++;
+
+    // simple rating system
+    people[w].rating += 10;
+    people[l].rating -= 10;
+
+    save();
+    render();
+    battle();
+}
+
+document.getElementById("left").onclick = ()=>vote(left,right);
+document.getElementById("right").onclick = ()=>vote(right,left);
+
+function render(){
+
+    let board = document.getElementById("board");
+
+    let sorted = [...people].sort((a,b)=>(b.rating||1000)-(a.rating||1000));
+
+    board.innerHTML = "<h2>Leaderboard</h2>";
+
+    sorted.forEach(p=>{
+        board.innerHTML += `
+        <div>
+            ${p.name} - ${p.rating||1000}
+        </div>`;
+    });
+}
+
+render();
+battle();
+
+</script>
+
+</body>
+</html>
